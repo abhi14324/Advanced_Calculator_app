@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            overflow: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(106, 17, 203, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: moveGrid 20s linear infinite;
+        }
+
+        @keyframes moveGrid {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        .calculator {
+            background: rgba(30, 30, 46, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 30px;
+            box-shadow: 0 30px 90px rgba(0, 0, 0, 0.5),
+                        0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+            width: 420px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .mode-toggle {
+            display: flex;
+            gap: 10px;
+        }
+
+        .mode-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 8px;
+            color: #a0a0a0;
+            padding: 8px 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .history-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            cursor: pointer;
+            color: #a0a0a0;
+            transition: all 0.3s;
+        }
+
+        .history-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .display {
+            background: linear-gradient(135deg, rgba(20, 20, 32, 0.8), rgba(30, 30, 46, 0.8));
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .display::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        }
+
+        .previous-operand {
+            color: #8b8b9a;
+            font-size: 16px;
+            min-height: 24px;
+            opacity: 0.8;
+        }
+
+        .current-operand {
+            color: #fff;
+            font-size: 42px;
+            font-weight: 300;
+            word-wrap: break-word;
+            word-break: break-all;
+            text-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .buttons {
+            display: grid;
+            gap: 12px;
+        }
+
+        .basic-mode .buttons {
+            grid-template-columns: repeat(4, 1fr);
+        }
+
+        .scientific-mode .buttons {
+            grid-template-columns: repeat(5, 1fr);
+        }
+
+        button {
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 500;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #fff;
+            position: relative;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        button:active::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .number, .decimal {
+            background: linear-gradient(135deg, rgba(74, 85, 104, 0.6), rgba(74, 85, 104, 0.4));
+        }
+
+        .operator {
+            background: linear-gradient(135deg, #f6ad55, #ed8936);
+            font-weight: 600;
+        }
+
+        .function {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.6), rgba(118, 75, 162, 0.6));
+            font-size: 14px;
+        }
+
+        .clear {
+            background: linear-gradient(135deg, #fc8181, #f56565);
+            grid-column: span 2;
+        }
+
+        .delete {
+            background: linear-gradient(135deg, #e53e3e, #c53030);
+        }
+
+        .equals {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            grid-column: span 2;
+            font-size: 24px;
+        }
+
+        .memory-display {
+            color: #48bb78;
+            font-size: 12px;
+            position: absolute;
+            top: 10px;
+            left: 25px;
+            opacity: 0.8;
+        }
+
+        .history-panel {
+            position: fixed;
+            right: -350px;
+            top: 0;
+            height: 100vh;
+            width: 350px;
+            background: rgba(30, 30, 46, 0.98);
+            backdrop-filter: blur(20px);
+            padding: 30px;
+            transition: right 0.3s;
+            z-index: 1000;
+            overflow-y: auto;
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .history-panel.active {
+            right: 0;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .history-header h3 {
+            color: white;
+            font-size: 20px;
+        }
+
+        .close-history {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            cursor: pointer;
+            color: white;
+        }
+
+        .history-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .history-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(-5px);
+        }
+
+        .history-item .expression {
+            color: #8b8b9a;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .history-item .result {
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .clear-history {
+            width: 100%;
+            background: linear-gradient(135deg, #e53e3e, #c53030);
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 500px) {
+            .calculator {
+                width: 95%;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator basic-mode" id="calculator">
+        <div class="header">
+            <div class="mode-toggle">
+                <button class="mode-btn active" onclick="calc.setMode('basic')">Basic</button>
+                <button class="mode-btn" onclick="calc.setMode('scientific')">Scientific</button>
+            </div>
+            <button class="history-btn" onclick="calc.toggleHistory()">📊</button>
+        </div>
+
+        <div class="display">
+            <div class="memory-display" id="memoryDisplay"></div>
+            <div class="previous-operand" id="prevOperand"></div>
+            <div class="current-operand" id="currOperand">0</div>
+        </div>
+
+        <div class="buttons" id="buttons"></div>
+    </div>
+
+    <div class="history-panel" id="historyPanel">
+        <div class="history-header">
+            <h3>History</h3>
+            <button class="close-history" onclick="calc.toggleHistory()">✕</button>
+        </div>
+        <div id="historyList"></div>
+        <button class="clear-history" onclick="calc.clearHistory()">Clear History</button>
+    </div>
+
+    <script>
+        class Calculator {
+            constructor() {
+                this.prevOperandEl = document.getElementById('prevOperand');
+                this.currOperandEl = document.getElementById('currOperand');
+                this.memoryDisplayEl = document.getElementById('memoryDisplay');
+                this.historyListEl = document.getElementById('historyList');
+                this.calculatorEl = document.getElementById('calculator');
+                this.memory = 0;
+                this.history = [];
+                this.mode = 'basic';
+                this.clear();
+                this.renderButtons();
+            }
+
+            setMode(mode) {
+                this.mode = mode;
+                this.calculatorEl.className = `calculator ${mode}-mode`;
+                document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+                event.target.classList.add('active');
+                this.renderButtons();
+            }
+
+            renderButtons() {
+                const buttonsEl = document.getElementById('buttons');
+
+                const basicButtons = [
+                    { text: 'AC', class: 'clear', action: () => this.clear() },
+                    { text: 'DEL', class: 'delete', action: () => this.delete() },
+                    { text: '%', class: 'function', action: () => this.percentage() },
+                    { text: '÷', class: 'operator', action: () => this.chooseOperation('÷') },
+
+                    { text: '7', class: 'number', action: () => this.appendNumber('7') },
+                    { text: '8', class: 'number', action: () => this.appendNumber('8') },
+                    { text: '9', class: 'number', action: () => this.appendNumber('9') },
+                    { text: '×', class: 'operator', action: () => this.chooseOperation('×') },
+
+                    { text: '4', class: 'number', action: () => this.appendNumber('4') },
+                    { text: '5', class: 'number', action: () => this.appendNumber('5') },
+                    { text: '6', class: 'number', action: () => this.appendNumber('6') },
+                    { text: '-', class: 'operator', action: () => this.chooseOperation('-') },
+
+                    { text: '1', class: 'number', action: () => this.appendNumber('1') },
+                    { text: '2', class: 'number', action: () => this.appendNumber('2') },
+                    { text: '3', class: 'number', action: () => this.appendNumber('3') },
+                    { text: '+', class: 'operator', action: () => this.chooseOperation('+') },
+
+                    { text: '0', class: 'number', action: () => this.appendNumber('0') },
+                    { text: '.', class: 'decimal', action: () => this.appendNumber('.') },
+                    { text: '=', class: 'equals', action: () => this.compute() },
+                ];
+
+                const scientificButtons = [
+                    { text: 'AC', class: 'clear', action: () => this.clear() },
+                    { text: 'DEL', class: 'delete', action: () => this.delete() },
+                    { text: '%', class: 'function', action: () => this.percentage() },
+                    { text: 'MC', class: 'function', action: () => this.memoryClear() },
+                    { text: 'MR', class: 'function', action: () => this.memoryRecall() },
+
+                    { text: 'sin', class: 'function', action: () => this.trigFunction('sin') },
+                    { text: 'cos', class: 'function', action: () => this.trigFunction('cos') },
+                    { text: 'tan', class: 'function', action: () => this.trigFunction('tan') },
+                    { text: 'M+', class: 'function', action: () => this.memoryAdd() },
+                    { text: 'M-', class: 'function', action: () => this.memorySubtract() },
+
+                    { text: 'x²', class: 'function', action: () => this.power(2) },
+                    { text: 'x³', class: 'function', action: () => this.power(3) },
+                    { text: '√', class: 'function', action: () => this.sqrt() },
+                    { text: 'xʸ', class: 'function', action: () => this.chooseOperation('^') },
+                    { text: '÷', class: 'operator', action: () => this.chooseOperation('÷') },
+
+                    { text: 'ln', class: 'function', action: () => this.logarithm('ln') },
+                    { text: 'log', class: 'function', action: () => this.logarithm('log') },
+                    { text: 'eˣ', class: 'function', action: () => this.exponential() },
+                    { text: '10ˣ', class: 'function', action: () => this.power10() },
+                    { text: '×', class: 'operator', action: () => this.chooseOperation('×') },
+
+                    { text: '7', class: 'number', action: () => this.appendNumber('7') },
+                    { text: '8', class: 'number', action: () => this.appendNumber('8') },
+                    { text: '9', class: 'number', action: () => this.appendNumber('9') },
+                    { text: '(', class: 'function', action: () => this.appendNumber('(') },
+                    { text: '-', class: 'operator', action: () => this.chooseOperation('-') },
+
+                    { text: '4', class: 'number', action: () => this.appendNumber('4') },
+                    { text: '5', class: 'number', action: () => this.appendNumber('5') },
+                    { text: '6', class: 'number', action: () => this.appendNumber('6') },
+                    { text: ')', class: 'function', action: () => this.appendNumber(')') },
+                    { text: '+', class: 'operator', action: () => this.chooseOperation('+') },
+
+                    { text: '1', class: 'number', action: () => this.appendNumber('1') },
+                    { text: '2', class: 'number', action: () => this.appendNumber('2') },
+                    { text: '3', class: 'number', action: () => this.appendNumber('3') },
+                    { text: 'π', class: 'function', action: () => this.insertConstant(Math.PI) },
+                    { text: 'e', class: 'function', action: () => this.insertConstant(Math.E) },
+
+                    { text: '±', class: 'function', action: () => this.toggleSign() },
+                    { text: '0', class: 'number', action: () => this.appendNumber('0') },
+                    { text: '.', class: 'decimal', action: () => this.appendNumber('.') },
+                    { text: '=', class: 'equals', action: () => this.compute(), span: 2 },
+                ];
+
+                const buttons = this.mode === 'basic' ? basicButtons : scientificButtons;
+
+                buttonsEl.innerHTML = '';
+                buttons.forEach(btn => {
+                    const button = document.createElement('button');
+                    button.textContent = btn.text;
+                    button.className = btn.class;
+                    if (btn.span) button.style.gridColumn = `span ${btn.span}`;
+                    button.onclick = btn.action;
+                    buttonsEl.appendChild(button);
+                });
+            }
+
+            clear() {
+                this.currentOperand = '0';
+                this.previousOperand = '';
+                this.operation = undefined;
+                this.updateDisplay();
+            }
+
+            delete() {
+                if (this.currentOperand === '0') return;
+                this.currentOperand = this.currentOperand.slice(0, -1);
+                if (this.currentOperand === '' || this.currentOperand === '-') {
+                    this.currentOperand = '0';
+                }
+                this.updateDisplay();
+            }
+
+            appendNumber(num) {
+                if (num === '.' && this.currentOperand.includes('.')) return;
+                if (this.currentOperand === '0' && num !== '.') {
+                    this.currentOperand = num;
+                } else {
+                    this.currentOperand += num;
+                }
+                this.updateDisplay();
+            }
+
+            chooseOperation(op) {
+                if (this.currentOperand === '') return;
+                if (this.previousOperand !== '') {
+                    this.compute();
+                }
+                this.operation = op;
+                this.previousOperand = this.currentOperand;
+                this.currentOperand = '0';
+                this.updateDisplay();
+            }
+
+            compute() {
+                let result;
+                const prev = parseFloat(this.previousOperand);
+                const curr = parseFloat(this.currentOperand);
+
+                if (isNaN(prev) || isNaN(curr)) return;
+
+                let expression = `${prev} ${this.operation} ${curr}`;
+
+                switch (this.operation) {
+                    case '+':
+                        result = prev + curr;
+                        break;
+                    case '-':
+                        result = prev - curr;
+                        break;
+                    case '×':
+                        result = prev * curr;
+                        break;
+                    case '÷':
+                        if (curr === 0) {
+                            alert('Cannot divide by zero');
+                            return;
+                        }
+                        result = prev / curr;
+                        break;
+                    case '^':
+                        result = Math.pow(prev, curr);
+                        break;
+                    default:
+                        return;
+                }
+
+                this.addToHistory(expression, result);
+                this.currentOperand = this.roundResult(result).toString();
+                this.operation = undefined;
+                this.previousOperand = '';
+                this.updateDisplay();
+            }
+
+            roundResult(num) {
+                return Math.round(num * 100000000) / 100000000;
+            }
+
+            percentage() {
+                const curr = parseFloat(this.currentOperand);
+                if (isNaN(curr)) return;
+                this.currentOperand = (curr / 100).toString();
+                this.updateDisplay();
+            }
+
+            toggleSign() {
+                if (this.currentOperand === '0') return;
+                if (this.currentOperand.startsWith('-')) {
+                    this.currentOperand = this.currentOperand.slice(1);
+                } else {
+                    this.currentOperand = '-' + this.currentOperand;
+                }
+                this.updateDisplay();
+            }
+
+            trigFunction(func) {
+                const curr = parseFloat(this.currentOperand);
+                if (isNaN(curr)) return;
+                const radians = curr * (Math.PI / 180);
+                let result;
+                switch (func) {
+                    case 'sin':
+                        result = Math.sin(radians);
+                        break;
+                    case 'cos':
+                        result = Math.cos(radians);
+                        break;
+                    case 'tan':
+                        result = Math.tan(radians);
+                        break;
+                }
+                this.addToHistory(`${func}(${curr}°)`, result);
+                this.currentOperand = this.roundResult(result).toString();
+                this.updateDisplay();
+            }
+
+            power(exp) {
+                const curr = parseFloat(this.currentOperand);
+                if (isNaN(curr)) return;
+                const result = Math.pow(curr, exp);
+                this.addToHistory(`${curr}^${exp}`, result);
+                this.currentOperand = this.roundResult(result).toString();
+                this.updateDisplay();
+            }
+
+            sqrt() {
+                const curr = parseFloat(this.currentOperand);
+                if (isNaN(curr)) return;
+                if (curr < 0) {
+                    alert('Cannot calculate square root of negative number');
+                    return;
+                }
+                const result = Math.sqrt(curr);
+                this.addToHistory(`√${curr}`, result);
+                this.currentOperand = this.roundResult(result).toString();
+                this.updateDisplay();
+            }
+
+            logarithm(type) {
+                const curr = parseFloat(this.currentOperand);
+                if (isNaN(curr) || curr <= 0) {
+                    alert('Logarithm only works for positive numbers');
+                    return;
+                }
+                const result = type === 'ln' ? Math.log(curr) : Math.log10(curr);
+                this.addToHistory(`${type}(${curr})`, result);
+                this.currentOperand = this.roundResult(result).toString();
+                this.updateDisplay();
+            }
+
+            exponential() {
+                const curr = parseFloat(this.currentOperand);
+                if (isNaN(curr)) return;
+                const result = Math.exp(curr);
+                this.addToHistory(`e^${curr}`, result);
+                this.currentOperand = this.roundResult(result).toString();
+                this.updateDisplay();
+            }
+
+            power10() {
+                const curr = parseFloat(this.currentOperand);
+                if (isNaN(curr)) return;
+                const result = Math.pow(10, curr);
+                this.addToHistory(`10^${curr}`, result);
+                this.currentOperand = this.roundResult(result).toString();
+                this.updateDisplay();
+            }
+
+            insertConstant(value) {
+                this.currentOperand = value.toString();
+                this.updateDisplay();
+            }
+
+            memoryClear() {
+                this.memory = 0;
+                this.updateMemoryDisplay();
+            }
+
+            memoryRecall() {
+                this.currentOperand = this.memory.toString();
+                this.updateDisplay();
+            }
+
+            memoryAdd() {
+                const curr = parseFloat(this.currentOperand);
+                if (!isNaN(curr)) {
+                    this.memory += curr;
+                    this.updateMemoryDisplay();
+                }
+            }
+
+            memorySubtract() {
+                const curr = parseFloat(this.currentOperand);
+                if (!isNaN(curr)) {
+                    this.memory -= curr;
+                    this.updateMemoryDisplay();
+                }
+            }
+
+            updateMemoryDisplay() {
+                this.memoryDisplayEl.textContent = this.memory !== 0 ? `M: ${this.memory}` : '';
+            }
+
+            addToHistory(expression, result) {
+                this.history.unshift({ expression, result });
+                if (this.history.length > 50) this.history.pop();
+                this.updateHistoryDisplay();
+            }
+
+            updateHistoryDisplay() {
+                this.historyListEl.innerHTML = this.history.map((item, i) => `
+                    <div class="history-item" onclick="calc.loadFromHistory(${i})">
+                        <div class="expression">${item.expression}</div>
+                        <div class="result">= ${this.formatNumber(item.result.toString())}</div>
+                    </div>
+                `).join('');
+            }
+
+            loadFromHistory(index) {
+                const item = this.history[index];
+                this.currentOperand = item.result.toString();
+                this.updateDisplay();
+                this.toggleHistory();
+            }
+
+            clearHistory() {
+                this.history = [];
+                this.updateHistoryDisplay();
+            }
+
+            toggleHistory() {
+                document.getElementById('historyPanel').classList.toggle('active');
+            }
+
+            formatNumber(num) {
+                if (num === '') return '';
+                const parts = num.split('.');
+                let intPart = parts[0].replace(/[^0-9-]/g, '');
+                if (intPart === '') return num;
+                const isNegative = intPart.startsWith('-');
+                intPart = intPart.replace('-', '');
+                intPart = parseFloat(intPart).toLocaleString('en');
+                intPart = isNegative ? '-' + intPart : intPart;
+                return parts[1] != null ? `${intPart}.${parts[1]}` : intPart;
+            }
+
+            updateDisplay() {
+                this.currOperandEl.textContent = this.formatNumber(this.currentOperand);
+
+                if (this.operation != null) {
+                    this.prevOperandEl.textContent =
+                        `${this.formatNumber(this.previousOperand)} ${this.operation}`;
+                } else {
+                    this.prevOperandEl.textContent = '';
+                }
+            }
+        }
+
+        const calc = new Calculator();
+
+        // Keyboard support
+        document.addEventListener('keydown', (e) => {
+            if (e.key >= '0' && e.key <= '9') calc.appendNumber(e.key);
+            if (e.key === '.') calc.appendNumber('.');
+            if (e.key === '+') calc.chooseOperation('+');
+            if (e.key === '-') calc.chooseOperation('-');
+            if (e.key === '*') calc.chooseOperation('×');
+            if (e.key === '/') {
+                e.preventDefault();
+                calc.chooseOperation('÷');
+            }
+            if (e.key === 'Enter' || e.key === '=') calc.compute();
+            if (e.key === 'Backspace') calc.delete();
+            if (e.key === 'Escape') calc.clear();
+            if (e.key === '%') calc.percentage();
+        });
+    </script>
+</body>
+</html>
