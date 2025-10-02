@@ -48,4 +48,4 @@ A beautiful and feature-rich scientific calculator built with pure HTML, CSS, an
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/your-username/advanced-calculator.git
+git clone https://github.com/abhi14324/advanced-calculator.git
