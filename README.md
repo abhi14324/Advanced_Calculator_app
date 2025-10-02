@@ -36,7 +36,7 @@ A beautiful and feature-rich scientific calculator built with pure HTML, CSS, an
 
 ## 📸 Screenshots
 
-![Calculator Screenshot](screenshot.png)
+![Calculator Screenshot](screenshots)
 
 ## 🛠️ Technologies Used
 
