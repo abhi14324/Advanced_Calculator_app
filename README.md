@@ -32,7 +32,7 @@ A beautiful and feature-rich scientific calculator built with pure HTML, CSS, an
 
 ## 🚀 Live Demo
 
-[View Live Demo](http://localhost:63342/Web%20Development%20Project/Calculator/Calculator_app.html?_ijt=ftc3olaqisthbpe50sur1duf3t&_ij_reload=RELOAD_ON_SAVE)
+[View Live Demo](https://github.com/abhi14324/Advanced_Calculator_app)
 
 ## 📸 Screenshots
 
